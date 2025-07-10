@@ -305,6 +305,7 @@
                 </div>
             </div>
             <div id="tabEncrypt" class="tab-content hidden">
+
     <h5 class="font-bold text-lg border-b-[1px]">What is RSA Encryption?</h5>
     <p>
         Once RSA keys are generated, the sender uses the recipient’s public key to encrypt the original message.
@@ -365,6 +366,27 @@
         </div>
         <br>
     </div>
+
+    <hr class="my-6 border-t-[2px] border-gray-400">
+
+<h5 class="font-bold text-lg border-b-[1px] mt-6">Second method of Encryption </h5>
+
+<div class="flex flex-col gap-[10px] justify-center items-center mt-[20px]">
+    <label for="crypto317-input" class="text-lg">Enter your uppercase text (A–Z only):</label>
+    <input type="text" id="crypto317-input" class="border-1 border-gray-700 rounded-sm p-2 w-full" placeholder="Ex: STOP" />
+
+    <label for="crypto317-key-e" class="text-lg">Enter the public key (e):</label>
+    <input type="number" id="crypto317-key-e" class="border-1 border-gray-700 rounded-sm p-2 w-[200px]" placeholder="Ex: 13" />
+
+    <label for="crypto317-key-n" class="text-lg">Enter the modulus (n):</label>
+    <input type="number" id="crypto317-key-n" class="border-1 border-gray-700 rounded-sm p-2 w-[200px]" placeholder="Ex: 2537" />
+
+    <button id="crypto317-encrypt-btn" class="bg-purple-600 hover:bg-yellow-400 text-white rounded-md p-2">Encrypt 4.6</button>
+
+    <div class="font-bold mt-4">Encrypted Output:</div>
+    <div id="crypto317-result" class="bg-yellow-200 text-xl p-2 w-full text-center">No Result</div>
+</div>
+
 </div>
             
             <div id="tabDecrypt" class="tab-content hidden">
@@ -420,7 +442,7 @@
                 <div id="rsa-decrypt-result" class="bg-yellow-200 mt-[20px] text-xl text-lg">No Result</div>
         </div>
 </div>
-</body>
+
 <script src="index.js"></script>
 <script type="module" src="interaction.js"></script>
 <script type="module" src="affine-interaction.js"></script>
@@ -447,5 +469,62 @@
     // Add active class to the clicked button
     evt.currentTarget.classList.add("active");
   }
+
+
+  //--------------------------------------------------------------
+
+  function letterToNumber(str) {
+    return str.toUpperCase().replace(/[^A-Z]/g, '')
+      .split('')
+      .map(ch => {
+        let num = ch.charCodeAt(0) - 64;
+        return num < 10 ? '0' + num : '' + num;
+      }).join('');
+  }
+
+  function splitIntoBlocks(numStr, blockSize = 4) {
+    const blocks = [];
+    for (let i = 0; i < numStr.length; i += blockSize) {
+      blocks.push(numStr.slice(i, i + blockSize));
+    }
+    return blocks;
+  }
+
+  function modPow(base, exponent, mod) {
+    let result = 1n;
+    base = BigInt(base);
+    exponent = BigInt(exponent);
+    mod = BigInt(mod);
+
+    while (exponent > 0n) {
+      if (exponent % 2n === 1n) {
+        result = (result * base) % mod;
+      }
+      base = (base * base) % mod;
+      exponent = exponent / 2n;
+    }
+    return result;
+  }
+
+  document.getElementById('crypto317-encrypt-btn').addEventListener('click', () => {
+    const input = document.getElementById('crypto317-input').value.trim().toUpperCase();
+    const e = parseInt(document.getElementById('crypto317-key-e').value);
+    const n = parseInt(document.getElementById('crypto317-key-n').value);
+    const outputDiv = document.getElementById('crypto317-result');
+
+    if (!input || isNaN(e) || isNaN(n)) {
+      outputDiv.innerText = 'Please enter valid input and keys.';
+      return;
+    }
+
+    const numericStr = letterToNumber(input);
+    const blocks = splitIntoBlocks(numericStr);
+    const encrypted = blocks.map(b => modPow(b, e, n).toString());
+
+    outputDiv.innerText = encrypted.join(' ');
+  });
 </script>
+</body>
+
 </html>
+
