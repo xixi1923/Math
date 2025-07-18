@@ -4,449 +4,615 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Encryption and Decryption Demo</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <link rel="stylesheet" href="youtube.css">
+    <!-- Tailwind CSS CDN for easy styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for the tab buttons and video container */
+        body {
+            font-family: 'Inter', sans-serif; /* Using Inter font as per instructions */
+            background-color: #f0f2f5; /* Light grey background for the whole page */
+            color: #333;
+        }
+
+        .tab-buttons {
+            display: flex;
+            flex-wrap: wrap; /* Allow tabs to wrap on smaller screens */
+            gap: 8px; /* Space between buttons */
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0; /* Separator for tabs */
+            padding-bottom: 10px;
+        }
+
+        .tab-link {
+            background-color: #e0e7ff; /* Light blue for inactive tabs */
+            color: #3b82f6; /* Blue text for inactive tabs */
+            padding: 12px 20px;
+            border-radius: 8px; /* Rounded corners for tabs */
+            cursor: pointer;
+            transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
+            font-weight: 600;
+            flex-grow: 1; /* Allow buttons to grow */
+            text-align: center;
+            white-space: nowrap; /* Prevent text wrapping inside buttons */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+        }
+
+        .tab-link:hover {
+            background-color: #c7d2fe; /* Darker blue on hover */
+            transform: translateY(-2px); /* Slight lift effect */
+        }
+
+        .tab-link.active {
+            background-color: #3b82f6; /* Dark blue for active tab */
+            color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* More prominent shadow for active tab */
+            transform: translateY(-2px); /* Keep lift effect for active */
+        }
+
+        .tab-content {
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* Soft shadow for content areas */
+        }
+
+        /* Responsive video container for 16:9 aspect ratio */
+        .video-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio (height / width = 9 / 16 = 0.5625) */
+            height: 0;
+            overflow: hidden;
+            background-color: #000; /* Black background for video area */
+            border-radius: 8px; /* Rounded corners for video container */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Input field and button styling consistency */
+        input[type="text"],
+        input[type="number"] {
+            border: 1px solid #d1d5db; /* Light grey border */
+            border-radius: 0.375rem; /* rounded-md */
+            padding: 0.5rem 0.75rem; /* p-2 */
+            width: 100%;
+            max-width: 400px; /* Limit width for better readability */
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05); /* subtle inner shadow */
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #3b82f6; /* Blue border on focus */
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25); /* Focus ring */
+        }
+
+        button {
+            padding: 0.75rem 1.5rem; /* p-3 px-6 */
+            font-weight: 600; /* font-semibold */
+            border-radius: 0.375rem; /* rounded-md */
+            color: white;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        button:hover {
+            transform: translateY(-2px); /* Lift effect on hover */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Specific button colors */
+        .bg-blue-500 { background-color: #3b82f6; }
+        .bg-blue-500:hover { background-color: #2563eb; } /* Darker blue on hover */
+
+        .bg-red-500 { background-color: #ef4444; }
+        .bg-red-500:hover { background-color: #dc2626; } /* Darker red on hover */
+
+        .bg-purple-600 { background-color: #9333ea; }
+        .bg-purple-600:hover { background-color: #7e22ce; } /* Darker purple on hover */
+
+        /* Result display styling */
+        #caesar-result, #rsa-keygen-result, #rsa-encrypt-result, #rsa-decrypt-result, #crypto317-result {
+            background-color: #fffbeb; /* Light yellow background */
+            border: 1px solid #fcd34d; /* Yellow border */
+            color: #92400e; /* Darker text */
+            padding: 1rem;
+            border-radius: 0.375rem;
+            font-size: 1.25rem; /* text-xl */
+            font-weight: bold;
+            text-align: center;
+            word-wrap: break-word; /* Ensure long results wrap */
+            max-width: 100%; /* Ensure it doesn't overflow */
+        }
+
+        /* Responsive adjustments for the main grid */
+        @media (max-width: 767px) {
+            .grid-cols-5 {
+                grid-template-columns: 1fr; /* Single column on small screens */
+            }
+            .col-span-5, .md\:col-span-3, .lg\:col-span-4 {
+                grid-column: span 1 / span 1;
+            }
+            .tab-buttons {
+                flex-direction: column; /* Stack tabs vertically on small screens */
+            }
+            .tab-link {
+                width: 100%; /* Full width for stacked tabs */
+            }
+        }
+    </style>
 </head>
 
-<body class="font-serif ">
-    <div class="bg-white h-[600px] flex flex-col justify-around m-[25px] border-1 border-black">
-        <div class="flex justify-center items-center">
-            <img src="img/logo.png" class="w-[120px] sm:w-[240px]"/>
+<body class="font-serif bg-gray-100">
+    <!-- Main Title Page Section -->
+     <div class="bg-white h-auto py-10 flex flex-col justify-center items-center m-6 sm:m-10 border border-gray-300 rounded-lg shadow-lg w-[1440px] mx-auto">
+        <div class="flex justify-center items-center mb-24">
+            <!-- Placeholder image for logo with fallback -->
+            <img src="img/logo.png" class="w-[120px] sm:w-[500px] max-w-full rounded-md" alt="Company Logo" onerror="this.onerror=null;this.src='https://placehold.co/240x120/E0E7FF/3B82F6?text=LOGO';"/>
         </div>
-        <h1 class="text-center text-lg font-bold">ENCRYPTION AND DECRYPTION DEMO</h1>
-        <div class="text-center">
-            <p>submitted to</p>
-            <p class="font-bold">Mr. LIM Seyha</p>
-            <p>Mathematic Lecturer, Royal University of Phnom Penh, Phnom Penh</p>
+        <h1 class="text-center text-3xl sm:text-4xl font-extrabold text-gray-900 mb-6">ENCRYPTION AND DECRYPTION DEMO</h1>
+        <div class="text-center mb-8 space-y-2">
+            <p class="text-gray-700 text-lg">submitted to</p>
+            <p class="font-bold text-xl text-gray-800">Mr. LIM Seyha</p>
+            <p class="text-gray-700">Mathematic Lecturer, Royal University of Phnom Penh, Phnom Penh</p>
         </div>
-        <p class="text-center">April 22, 2025</p>
-        <div class="text-center">
-            <p>by</p>
-            <p>Group : 9 </p>
-            <h1>Members</h1>
-            <p class="font-bold">Mr. Ney Chhayta</p>
-            <p class="font-bold">Mrs. Thoeun Engyi</p>
-            <p class="font-bold">Mrs. Pa Borasy</p>
-            <p class="font-bold">Mrs. Pory Morokot</p>
-            <p class="font-bold">Mrs. Bo Sreyleav</p>
-            <p class="font-bold">Mrs. Ly Outya</p>
+        <p class="text-center text-gray-600 text-md mb-8">July 18, 2025</p>
+        <div class="text-center space-y-2">
+            <p class="text-gray-700 text-lg">by</p>
+            <p class="font-bold text-xl text-gray-800">Group : 1 </p>
+            <h2 class="text-2xl font-bold text-gray-900 mt-4 mb-2">Members</h2>
+            <ul class="list-none p-0 space-y-1 text-gray-700">
+                <li class="font-semibold">Mr. Ney Sokchhyta</li>
+                <li class="font-semibold">Mrs. Thoeun Engyi</li>
+                <li class="font-semibold">Mrs. Pa Borasy</li>
+                <li class="font-semibold">Mrs. Pory Morokot</li>
+                <li class="font-semibold">Mrs. Bo Sreyleav</li>
+                <li class="font-semibold">Mrs. Li Outya</li>
+            </ul>
         </div>
-    </div>
-    <div class="grid grid-cols-5 lg:grid-cols-6 border-1 border-black m-[25px]">
-        <div class="h-auto p-[20px] border-black col-span-5 md:col-span-3 lg:col-span-4">
-            <div class="tab-buttons">
-            <button class="tab-link active" onclick="openTab(event, 'tabHome')">Home</button>
-            <button class="tab-link" onclick="openTab(event, 'tabClassical')">Classical Cryptography</button>
-            <button class="tab-link" onclick="openTab(event, 'tabCaesar')">Caesar Cipher</button>
-            <button class="tab-link" onclick="openTab(event, 'tabRSA')">RSA Cryptography</button>
-            <button class="tab-link" onclick="openTab(event, 'tabKeygen')">RSA Keygen</button>
-            <button class="tab-link" onclick="openTab(event, 'tabEncrypt')">RSA Encryption </button>
-            <button class="tab-link" onclick="openTab(event, 'tabDecrypt')">RSA Decryption </button>
+        
+   
+            <!-- Tab Buttons -->
+          <div class="tab-buttons sticky top-0 bg-white shadow z-50 w-full border-b border-gray-200 flex flex-row p-10 ">
+  <button class="tab-link active " onclick="openTab(event, 'tabHome')">Home</button>
+  <button class="tab-link " onclick="openTab(event, 'tabClassical')">Classical Cryptography</button>
+  <button class="tab-link" onclick="openTab(event, 'tabCaesar')">Caesar Cipher</button>
+  <button class="tab-link" onclick="openTab(event, 'tabRSA')">RSA Cryptography</button>
+  <button class="tab-link" onclick="openTab(event, 'tabKeygen')">RSA Keygen</button>
+  <button class="tab-link" onclick="openTab(event, 'tabEncrypt')">RSA Encryption</button>
+  <button class="tab-link" onclick="openTab(event, 'tabDecrypt')">RSA Decryption</button>
+</div>
+
+               
+
+            <!-- Tab Content Areas -->
+            <div id="tabHome" class="tab-content">
+                <h1 class="text-3xl font-bold text-gray-900 mb-4">Cryptography Demo Hub</h1>
+                <p class="mb-4 leading-relaxed text-gray-700">Welcome to the Cryptography Demo Hub – your hands-on learning space for exploring how data is protected through encryption. Whether you're just curious or studying cybersecurity, this site helps you visualize and interact with real-world cryptographic techniques.</p>
+
+                <h2 class="text-2xl font-bold text-gray-800 mb-3">📚 What You'll Learn</h2>
+                <ul class="list-disc pl-6 mb-6 space-y-2 text-gray-700">
+                    <li><strong>Classical Cryptography:</strong> Discover the Caesar Cipher – a simple substitution technique used in ancient times to encode messages.</li>
+                    <li><strong>RSA Key Generation:</strong> See how public and private RSA keys are generated using mathematical principles.</li>
+                    <li><strong>RSA Encryption:</strong> Learn how messages are securely encrypted using the recipient's public key.</li>
+                    <li><strong>RSA Decryption:</strong> Understand how encrypted messages are safely decoded using the private key.</li>
+                </ul>
+
+                <h2 class="text-2xl font-bold text-gray-800 mb-3">🎯 Why It Matters</h2>
+                <p class="mb-4 leading-relaxed text-gray-700">Cryptography is essential for securing digital communication. From social media and email to banking and national security, encryption plays a vital role. This platform shows you how these systems work through fun, interactive demos.</p>
+
+                <h2 class="text-2xl font-bold text-gray-800 mb-3">🚀 Start Exploring</h2>
+                <p class="leading-relaxed text-gray-700">Use the navigation above to try each encryption method yourself. Learn by doing – encrypt and decrypt your own messages!</p>
             </div>
 
-        <div id="tabHome" class="tab-content">
-        <h1> Cryptography Demo Hub</h1>
-        <p>Welcome to the Cryptography Demo Hub – your hands-on learning space for exploring how data is protected through encryption. Whether you're just curious or studying cybersecurity, this site helps you visualize and interact with real-world cryptographic techniques.</p>
+            <div id="tabClassical" class="tab-content hidden">
+                <h2 class="text-2xl font-bold text-gray-900 mb-4">What is Cryptography?</h2>
+                <p class="mb-4 leading-relaxed text-gray-700"><strong>Cryptography:</strong> Cryptography is a method of protecting information and communications using codes, so that only those for whom the information is intended can read and process it. In computer science, cryptography refers to secure information and communication techniques derived from mathematical concepts and a set of rule-based calculations called algorithms, to transform messages in ways that are hard to decipher. These deterministic algorithms are used for cryptographic key generation, digital signing, verification to protect data privacy, web browsing on the internet and confidential communications such as credit card transactions and email.</p>
 
-        <h2>📚 What You'll Learn</h2>
-        <ul>
-            <li><strong>Classical Cryptography:</strong> Discover the Caesar Cipher – a simple substitution technique used in ancient times to encode messages.</li>
-            <li><strong>RSA Key Generation:</strong> See how public and private RSA keys are generated using mathematical principles.</li>
-            <li><strong>RSA Encryption:</strong> Learn how messages are securely encrypted using the recipient's public key.</li>
-            <li><strong>RSA Decryption:</strong> Understand how encrypted messages are safely decoded using the private key.</li>
-        </ul>
+                <h2 class="text-2xl font-bold text-gray-900 mb-4">What is Classical Cryptography?</h2>
+                <p class="mb-4 leading-relaxed text-gray-700"><strong>Classical Cryptography:</strong> Cryptography strategies and methods used to convert plain text into cipher text without the use of technology are known as classical cryptography. Cryptography is commonly defined as “an art of writing hidden messages”—and classical cryptography was indeed an art.</p>
 
-        <h2>🎯 Why It Matters</h2>
-        <p>Cryptography is essential for securing digital communication. From social media and email to banking and national security, encryption plays a vital role. This platform shows you how these systems work through fun, interactive demos.</p>
+                <h2 class="text-2xl font-bold text-gray-900 mb-4">Cryptography Techniques</h2>
+                <p class="mb-2 leading-relaxed text-gray-700"><strong>Cryptography techniques:</strong> Cryptographic techniques are methods used to ensure the secrecy and integrity of data by preventing unauthorized access and modification. These techniques rely on mathematical algorithms and keys to transform information into an unreadable format (ciphertext) and back again (plaintext). They are crucial for secure communication, data storage, and digital signatures. </p>
+                <p class="mb-2 leading-relaxed text-gray-700"><strong>Plaintext:</strong> refers to the original, readable content of data that needs to be transmitted over an insecure network before encryption is applied.</p>
+                <p class="mb-2 leading-relaxed text-gray-700"><strong>Encrypting Key:</strong> is a randomly generated string of bits used to transform plaintext into unreadable ciphertext using mathematical algorithms. There are two main types of encryption keys: symmetric keys and asymmetric keys.</p>
+                <p class="mb-2 leading-relaxed text-gray-700"><strong>Ciphertext:</strong> is the encrypted output produced after applying the encryption algorithm to plaintext. It is not understandable by humans without proper decryption.</p>
+                <p class="mb-4 leading-relaxed text-gray-700"><strong>Decrypting Key:</strong> is used to convert ciphertext back into its original plaintext form. Depending on the encryption method used, this key may be symmetric (the same as the encrypting key) or asymmetric (a different, mathematically related key).</p>
 
-        <h2> Start Exploring</h2>
-        <p>Use the navigation above to try each encryption method yourself. Learn by doing – encrypt and decrypt your own messages!</p>
-        </div>
-        <div id="tabClassical" class="tab-content hidden">
-        <!-- ...Classical Cryptography content... -->
-         <h2 class="text-xl font-bold">What is Cryptography?</h2>
-        <p><strong>Cryptography:</strong> Cryptography is a method of protecting information and communications using codes, so that only those for whom the information is intended can read and process it.
-        In computer science, cryptography refers to secure information and communication techniques derived from mathematical concepts and a set of rule-based calculations called algorithms, to transform messages in ways that are hard to decipher. These deterministic algorithms are used for cryptographic key generation, digital signing, verification to protect data privacy, web browsing on the internet and confidential communications such as credit card transactions and email.</p>
-         <h2 class="text-xl font-bold">What isClassical Cryptography?</h2>
-        <p><strong>Cryptography:</strong> Cryptography strategies and methods used to convert plain text into cipher text without the use of technology are known as classical cryptography. Cryptography is commonly defined as “an art of writing hidden messages”—and classical cryptography was indeed an art.</p>
-        <h2 class="text-xl font-bold">Cryptography techniques</h2>
-        <p><strong>Cryptography techniques:</strong>Cryptographic techniques are methods used to ensure the secrecy and integrity of data by preventing unauthorized access and modification. These techniques rely on mathematical algorithms and keys to transform information into an unreadable format (ciphertext) and back again (plaintext). They are crucial for secure communication, data storage, and digital signatures. </p>
-        <p><strong>Plaintext:</strong> refers to the original, readable content of data that needs to be transmitted over an insecure network before encryption is applied.</p>
-        <p><strong>Encrypting Key:</strong> is a randomly generated string of bits used to transform plaintext into unreadable ciphertext using mathematical algorithms. There are two main types of encryption keys: symmetric keys and asymmetric keys.</p>
-        <p><strong>Ciphertext:</strong> is the encrypted output produced after applying the encryption algorithm to plaintext. It is not understandable by humans without proper decryption.</p>
-        <p><strong>Decrypting Key:</strong> is used to convert ciphertext back into its original plaintext form. Depending on the encryption method used, this key may be symmetric (the same as the encrypting key) or asymmetric (a different, mathematically related key).</p>
-         <div style="text-align:center; margin-top: 30px;">
-            <img src="img/security_cissp_cryptography.jpg" 
-                 alt="Cryptography Diagram" 
-                 style="max-width:100%; height:auto; border: 1px solid #ccc; border-radius: 8px;"
-                 onerror="this.onerror=null;this.src='https://upload.wikimedia.org/wikipedia/commons/2/2b/Cryptography_diagram.png'; this.alt='Diagram not found, showing fallback image.';">
-            <p style="font-style: italic; margin-top: 10px;">Figure: A simple diagram showing encryption and decryption process</p>  
-        </div>
-        <h2 class="text-xl font-bold"> Functionality of a Cryptosystem</h2>
-        <p><strong> Authentication:</strong> Authentication is the process of verifying the identity of a user or device. This typically involves the use of a username and password or other credentials. It ensures that only legitimate users are granted access to a network or system. </p>
-        <p><strong>Authorization:</strong> Authorization is the process of determining whether an authenticated user has permission to access specific resources or perform certain actions. 
-        Most modern security systems follow a two-step approach:</p>
-    <ol style="margin-left: 20px;">
-        <li><strong>Step 1:</strong> The user is authenticated (identity is verified).</li>
-        <li><strong>Step 2:</strong> The system determines what resources or services the authenticated user is allowed to access.</li>
-    </ol>
-        <p><strong>Confidentiality (Privacy):</strong> Confidentiality ensures that sensitive information is accessible only to authorized individuals. Through the use of encryption, plaintext data is transformed into ciphertext, making it unreadable to anyone who does not possess the correct decryption key. This process protects the privacy of the data during storage or transmission.</p>
-        <p><strong>Integrity:</strong> Integrity guarantees that the data has not been altered, tampered with, or corrupted during transmission. It ensures that the received data is exactly the same as the original data sent. Cryptographic methods like hash functions and digital signatures are often used to maintain data integrity.</p>
-        <p><strong>Non-repudiation:</strong> Non-repudiation prevents parties from denying their actions. It ensures that a sender cannot deny sending a message, and a recipient cannot deny receiving it. Cryptographic techniques such as digital signatures provide proof of origin, integrity, and receipt of data, holding each party accountable for their actions.</p>
-    </div> 
-
-     <div id="tabCaesar" class="tab-content hidden"> 
-                    <h2 class="text-xl font-bold"> What is Caesar Cipher ?</h2>
-                <p><strong>Caesar cipher </strong>is a type of substitution cipher in which each letter of the alphabet is swap by a letter a certain distance away from that letter.</p>
-                <p class="text-lg font-bold">Algorithm</p>
-                  <ol style="margin-left: 20px;">
-        <li><strong>Step 0:</strong> Map each letter of the alphabet to its corresponding numerical position (i.e., A = 1, B = 2, ..., Z = 26) for mathematical representation.</li>
-        <div style="text-align:center; margin-top: 30px;">
-            <img src="img/step0.png" 
-                 alt="Cryptography Diagram" 
-                 style="max-width:100%; height:auto; border: 1px solid #ccc; border-radius: 8px;"
-                 onerror="this.onerror=null;this.src='https://upload.wikimedia.org/wikipedia/commons/2/2b/Cryptography_diagram.png'; this.alt='Diagram not found, showing fallback image.';">        </div>
-        <li><strong>Step 1:</strong>  Select an integer key 𝐾 ranging from 1 to 25 (corresponding to the 26 letters of the English alphabet). For instance, using a shift of 3, each letter is moved three positions forward — A becomes D, B becomes E, etc.</li>
-                <div style="text-align:center; margin-top: 30px;">
-             <img src="img/step01.png" 
-                 alt="Cryptography Diagram" 
-                 style="max-width:100%; height:auto; border: 1px solid #ccc; border-radius: 8px;"
-                 onerror="this.onerror=null;this.src='https://upload.wikimedia.org/wikipedia/commons/2/2b/Cryptography_diagram.png'; this.alt='Diagram not found, showing fallback image.';"></div>
-        <li style="margin-top: 10px;">
-    <strong>Step 2:</strong> Apply the Encryption Formula<br><br>
-    The encryption formula is:<br>
-    <code><strong>C = (L + K) mod 26</strong></code><br><br>
-    <strong>Where:</strong><br>
-    <ul style="margin-left: 20px; list-style-type: circle;">
-        <li><strong>C</strong> is the encrypted letter (ciphertext),</li>
-        <li><strong>L</strong> is the position of the original letter in the alphabet (A = 0, B = 1, ..., Z = 25),</li>
-        <li><strong>K</strong> is the chosen key (shift),</li>
-        <li><code>mod 26</code> ensures the result wraps around within the alphabet.</li>
-    </ul>
-    <br>
-    <strong>Example: Encrypting “YURIHANAMITCHI” with K = 3</strong><br><br>
-    Let's encrypt each letter of the word <strong>“YURIHANAMITCHI”</strong>:<br><br>
-        ...existing code...
-    <ul style="margin-left: 20px; list-style-type: none;">
-        <li>Y → 24 → (24 + 3) % 26 = 1 → <strong>B</strong></li>
-        <li>U → 20 → (20 + 3) % 26 = 23 → <strong>X</strong></li>
-        <li>R → 17 → (17 + 3) % 26 = 20 → <strong>U</strong></li>
-        <li>I → 8 → (8 + 3) % 26 = 11 → <strong>L</strong></li>
-        <li>H → 7 → (7 + 3) % 26 = 10 → <strong>K</strong></li>
-        <li>A → 0 → (0 + 3) % 26 = 3 → <strong>D</strong></li>
-        <li>N → 13 → (13 + 3) % 26 = 16 → <strong>Q</strong></li>
-        <li>A → 0 → (0 + 3) % 26 = 3 → <strong>D</strong></li>
-        <li>M → 12 → (12 + 3) % 26 = 15 → <strong>P</strong></li>
-        <li>I → 8 → (8 + 3) % 26 = 11 → <strong>L</strong></li>
-        <li>T → 19 → (19 + 3) % 26 = 22 → <strong>W</strong></li>
-        <li>C → 2 → (2 + 3) % 26 = 5 → <strong>F</strong></li>
-        <li>H → 7 → (7 + 3) % 26 = 10 → <strong>K</strong></li>
-        <li>I → 8 → (8 + 3) % 26 = 11 → <strong>L</strong></li>
-    </ul>
-    <code><strong>Hence encryption of IGNITE: LJQLWH</strong></code><br><br>
-    <img src="img/STEP2.png" 
-         alt="Cryptography Diagram" 
-         style="max-width:100%; height:auto; border: 1px solid #ccc; border-radius: 8px;"
-         onerror="this.onerror=null;this.src='https://upload.wikimedia.org/wikipedia/commons/2/2b/Cryptography_diagram.png'; this.alt='Diagram not found, showing fallback image.';">
-    <!-- CLOSE the previous <li> and <ol> here if not already closed -->
-    </li>
-    </ol>
-    ✅ Result: “YURIHANAMITCHI” becomes <strong>“BXULKDQDPLWFKL”</strong><br><br>
-
-    <strong>Step 3:</strong> Apply the Decryption Formula<br><br>
-    The decryption formula is:<br>
-    <code><strong>P = (C - K) mod 26</strong></code><br><br>
-    <strong>Where:</strong><br>
-    <ul style="margin-left: 20px; list-style-type: circle;">
-        <li><strong>P</strong> is the original letter (plaintext),</li>
-        <li><strong>C</strong> is the encrypted letter (ciphertext),</li>
-        <li><strong>K</strong> is the key (shift used during encryption),</li>
-        <li><code>mod 26</code> ensures the result wraps around the alphabet.</li>
-    </ul>
-    <br>
-    <strong>Decryption Example:</strong> “BXULKDQDPLWFKL” with K = 3 becomes “YURIHANAMITCHI”<br><br>
-    <strong>Limitation:</strong><br>
-    The Caesar cipher is vulnerable to brute-force attacks because it uses only a single key with 25 possible values (for the 26 English letters). An attacker can try each of the 25 shifts and quickly determine which one yields readable text. Once the key is found, the entire message can be decrypted easily.
-    ...existing code...
-                    </ol>
-           <h4 class="font-bold text-lg border-b-[1px]">Caesar Cipher Demo</h4>
-           <p class="mt-4">
-            The Caesar Cipher is a classical encryption technique where each letter in the plaintext is shifted a fixed number of positions in the alphabet. While it's historically important and easy to understand, this cipher is extremely vulnerable to attacks. Since there are only 25 possible shifts, a brute-force attacker can easily try every option until the correct message is revealed. Moreover, it does not hide letter frequencies, making it susceptible to frequency analysis. Despite its simplicity and weakness by modern standards, the Caesar Cipher is a great starting point for learning about encryption. The video below demonstrates how this cipher works in a fun and visual way.
-        </p>
-                 <!-- 🎥 YouTube Video Embed -->
-                    <div class="video-container" style="margin: 20px 0;">
-                        <iframe width="560" height="315" src="https://www.youtube.com/embed/sMOZf4GN3oc" 
-                            title="Caesar Cipher Explained - YouTube" frameborder="0" 
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                            allowfullscreen></iframe>
-                    </div>
-                <br>
-                <div class="flex flex-col gap-[10px] justify-center items-center mt-[10px]">
-            <p class="text-green-600 font-semibold text-md text-center">
-                ✅ All set! Go ahead and enter your text below to get started with Caesar Cipher encryption or decryption.
-            </p>
-        </div>
-                <div class="flex flex-col gap-[10px] justify-center items-center mt-[10px]"></div>
-                <div class="flex flex-col gap-[10px] justify-center items-center">
-                    <label for="caesar-input" class="text-lg">Enter your text (Plain text or Cipher text):</label>
-                    <input type="text" id="caesar-input" class="border-1 border-gray-700 rounded-sm p-2 w-full" placeholder="Ex: SURRENDER NOW"/>
-
-                    <button id="caesar-encrypt-btn" class="bg-blue-500 hover:cursor-pointer hover:bg-yellow-400 text-white rounded-md p-2">Encrypt</button>
-                    <button id="caesar-decrypt-btn" class="bg-red-500  hover:cursor-pointer hover:bg-yellow-400 text-white rounded-md p-2">Decrypt</button>
-
-                    <br>
-                    <div class="font-bold">Result:</div>
-                    <div id="caesar-result" class="bg-yellow-200 mt-[20px] text-xl text-lg">No Result</div>
+                <div class="text-center my-8">
+                    <img src="img/security_cissp_cryptography.jpg" alt="Cryptography Diagram" class="max-w-full h-auto border border-gray-300 rounded-lg shadow-md mx-auto" onerror="this.onerror=null;this.src='https://upload.wikimedia.org/wikipedia/commons/2/2b/Cryptography_diagram.png'; this.alt='Diagram not found, showing fallback image.';">
+                    <p class="italic text-sm text-gray-600 mt-2">Figure: A simple diagram showing encryption and decryption process</p>
                 </div>
-    </div>    
-    <div id="tabRSA" class="tab-content hidden">
-            <h2 class="text-xl font-bold"> What is RSA Cryptography?</h2>
-            <p>RSA (Rivest–Shamir–Adleman) is a public-key cryptosystem and one of the oldest, most reliable methods for securing data transmission. Developed in 1977, it allows data to be encrypted with one key (public) and decrypted with another (private). Its strength relies on the computational difficulty of factoring large prime numbers.</p>
-            <h2 class="text-xl font-bold">How Does RSA Verify Identity?</h2>
-                <p>Encrypting with the public key and decrypting with the private key is a core feature of RSA, enabling secure communication over untrusted networks. To send sensitive data, the recipient shares their public key with the sender. The sender uses this public key to encrypt the message and transmits it. Only the recipient, who holds the matching private key, can decrypt and read the message. Even if the data is intercepted in transit, it remains unreadable without the private key — ensuring confidentiality and secure delivery.</p>
-                <div style="text-align:center; margin-top: 30px;">
-                    <img src="img/RSA-Working-Diagram.jpg" 
-                        alt="Cryptography Diagram" 
-                        style="max-width:100%; height:auto; border: 1px solid #ccc; border-radius: 8px;"
-                        onerror="this.onerror=null;this.src='https://upload.wikimedia.org/wikipedia/commons/2/2b/Cryptography_diagram.png'; this.alt='Diagram not found, showing fallback image.';">
-                    <p style="font-style: italic; margin-top: 10px;">Figure: A simple showing diagram illustrating how the RSA encryption algorithm works</p>  
-                </div>
-            <p>
-            <h2 class="text-xl font-bold">How is RSA Identity Verification?</h2>
-            <strong>RSA Identity Verification:</strong>RSA can also be used to verify identity by encrypting a message with the sender’s private key. The recipient uses the sender’s public key to decrypt it — if successful, it proves the message came from the sender and wasn’t tampered with. This process supports digital signatures. RSA’s strength lies in the difficulty of factoring large numbers made from multiplying two large primes. Modern RSA keys are typically 2048 bits long, offering strong security, while 1024-bit keys are becoming outdated.</p>
-             <!-- 🎥 YouTube Video Embed -->
-                    <div class="video-container" style="margin: 20px 0;">
-                        <iframe width="560" height="315" src="https://youtu.be/Pq8gNbvfaoM" 
-                            title="Caesar Cipher Explained - YouTube" frameborder="0" 
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                            allowfullscreen></iframe>
-                    </div>
-            <h2 class="text-xl font-bold"> Functionality of an RSA Cryptosystem</h2>
-            <p class="mt-2">
-                RSA works using a pair of keys: a <strong>public key</strong> (shared with everyone) and a <strong>private key</strong> (kept secret). These keys are mathematically linked and enable several essential security features:
-            </p>
-            <ul class="list-disc ml-5 mt-3 space-y-2">
-                <li><strong>Confidentiality:</strong> Ensures only the intended recipient can read the message. The sender encrypts the data with the recipient’s public key, and only the recipient can decrypt it using their private key.</li>
-                <li><strong>Authentication:</strong> Proves the identity of the sender. The sender encrypts data (or a digital signature) with their private key, and anyone with the sender’s public key can verify its origin.</li>
-                <li><strong>Integrity:</strong> Ensures that the message hasn’t been tampered with during transmission. RSA can be used with digital signatures to verify that the message remains unchanged.</li>
-                <li><strong>Non-repudiation:</strong> Prevents senders from denying that they sent a message. Once a message is signed using a private key, it can be verified by others using the public key.</li>
-            </ul>
+
+                <h2 class="text-2xl font-bold text-gray-900 mb-4">Functionality of a Cryptosystem</h2>
+                <p class="mb-2 leading-relaxed text-gray-700"><strong>Authentication:</strong> Authentication is the process of verifying the identity of a user or device. This typically involves the use of a username and password or other credentials. It ensures that only legitimate users are granted access to a network or system. </p>
+                <p class="mb-2 leading-relaxed text-gray-700"><strong>Authorization:</strong> Authorization is the process of determining whether an authenticated user has permission to access specific resources or perform certain actions. Most modern security systems follow a two-step approach:</p>
+                <ol class="list-decimal pl-6 mb-4 space-y-1 text-gray-700">
+                    <li><strong>Step 1:</strong> The user is authenticated (identity is verified).</li>
+                    <li><strong>Step 2:</strong> The system determines what resources or services the authenticated user is allowed to access.</li>
+                </ol>
+                <p class="mb-2 leading-relaxed text-gray-700"><strong>Confidentiality (Privacy):</strong> Confidentiality ensures that sensitive information is accessible only to authorized individuals. Through the use of encryption, plaintext data is transformed into ciphertext, making it unreadable to anyone who does not possess the correct decryption key. This process protects the privacy of the data during storage or transmission.</p>
+                <p class="mb-2 leading-relaxed text-gray-700"><strong>Integrity:</strong> Integrity guarantees that the data has not been altered, tampered with, or corrupted during transmission. It ensures that the received data is exactly the same as the original data sent. Cryptographic methods like hash functions and digital signatures are often used to maintain data integrity.</p>
+                <p class="mb-4 leading-relaxed text-gray-700"><strong>Non-repudiation:</strong> Non-repudiation prevents parties from denying their actions. It ensures that a sender cannot deny sending a message, and a recipient cannot deny receiving it. Cryptographic techniques such as digital signatures provide proof of origin, integrity, and receipt of data, holding each party accountable for their actions.</p>
             </div>
-            <div id="tabKeygen" class="tab-content hidden">
-                <h5 class="font-bold text-lg border-b-[1px]">What is RSA Key generation ?</h5>
-                <p>In cryptography, key generation is the process of creating one or more keys to be used for encryption and decryption of data. The system generates two mathematically linked keys: a public key, which is shared openly, and a private key, which is kept secret. These keys are based on large prime numbers and mathematical functions, ensuring that data encrypted with one key can only be decrypted with the other.</p>
-                <p class="text-lg font-bold">Key Generation Algorithm</p>
-    <ol style="margin-left: 20px;">
-        <li><strong>Step 1:</strong> Choose two distinct prime numbers <code>p</code> and <code>q</code>.
-            <br>Example: <code>p = 3</code>, <code>q = 11</code></li>
 
-        <li><strong>Step 2:</strong> Compute <code>n = p × q</code>, which will be used as the modulus for both keys.
-            <br>Example: <code>n = 3 × 11 = 33</code></li>
+            <div id="tabCaesar" class="tab-content hidden">
+                <h2 class="text-2xl font-bold text-gray-900 mb-4">What is Caesar Cipher?</h2>
+                <p class="mb-4 leading-relaxed text-gray-700"><strong>Caesar cipher</strong> is a type of substitution cipher in which each letter of the alphabet is swap by a letter a certain distance away from that letter.</p>
 
-        <li><strong>Step 3:</strong> Compute Euler’s Totient function: 
-            <br><code>Φ(n) = (p − 1) × (q − 1)</code>
-            <br>Example: <code>Φ(33) = (3−1)(11−1) = 2 × 10 = 20</code></li>
-
-        <li><strong>Step 4:</strong> Choose a public exponent <code>e</code> such that:
-            <ul style="margin-left: 20px; list-style-type: circle;">
-                <li><code>1 &lt; e &lt; Φ(n)</code></li>
-                <li><code>gcd(e, Φ(n)) = 1</code> (i.e., e is co-prime with Φ(n))</li>
-            </ul>
-            Example: <code>e = 3</code></li>
-
-        <li><strong>Step 5:</strong> Calculate the private exponent <code>d</code> such that:
-            <br><code>(d × e) ≡ 1 mod Φ(n)</code>
-            <br>This is done using the Extended Euclidean Algorithm.
-            <br>Example: <code>d = 7</code> since <code>3 × 7 = 21 ≡ 1 mod 20</code></li>
-
-        <li><strong>Step 6:</strong> Construct the keys:
-            <ul style="margin-left: 20px; list-style-type: circle;">
-                <li>Public Key: <code>(e = 3, n = 33)</code></li>
-                <li>Private Key: <code>(d = 7, n = 33)</code></li>
-            </ul>
-        </li>
-    </ol>
-
-    <h4 class="font-bold text-lg border-b-[1px] mt-6">RSA Key Generation Summary</h4>
-    <p>
-        ✅ In this example:<br>
-        <strong>Public Key:</strong> <code>(3, 33)</code><br>
-        <strong>Private Key:</strong> <code>(7, 33)</code><br><br>
-        The public key is used for encryption, and the private key is used for decryption.
-    </p>
-    <h4 class="font-bold text-lg border-b-[1px]">RSA Keygen Demo</h4>
-        <p class="mt-2">
-            Understanding the key generation steps is crucial to grasping how RSA ensures secure communication. The video below breaks down the key generation process in a visual and intuitive way — making it easier to understand even for beginners. Watch how prime numbers, Euler’s Totient function, and modular inverse all come together to form the core of RSA encryption.
-        </p>
-            <div class="video-container" style="margin: 20px 0;">
-            <iframe width="560" height="315" src="https://www.youtube.com/embed/819cUtO2cwo"
-                title="RSA Algorithm Explained - YouTube" frameborder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                allowfullscreen></iframe>
-        </div>
-
-    <div class="flex flex-col gap-[10px] justify-center items-center mt-[10px]">
-        <p class="text-green-600 font-semibold text-md text-center">
-            ✅ Ready to test it out? Use the RSA demo below to generate keys and see encryption in action.
-        </p>
-    </div>
-                <div class="flex flex-col gap-[10px] justify-center items-center mt-[30px]">
-                    <div class="flex flex-col gap-[10px] justify-center items-center">
-                        <label for="rsa-keygen-p" class="text-lg">Enter the first prime number p:</label>
-                        <input type="number" id="rsa-keygen-p" class="border-1 border-gray-700 rounded-sm p-2 w-full" placeholder="Ex: 61"/>
-                        <label for="rsa-keygen-q" class="text-lg">Enter the second prime number q:</label>
-                        <input type="number" id="rsa-keygen-q" class="border-1 border-gray-700 rounded-sm p-2 w-full" placeholder="Ex: 53"/>
-                        <button id="rsa-keygen-btn" class="bg-blue-500 hover:cursor-pointer hover:bg-yellow-400 text-white rounded-md p-2">Generate Key</button>
+                <h3 class="text-xl font-bold text-gray-800 border-b border-gray-300 pb-2 mb-4">Algorithm</h3>
+                <ol class="list-decimal pl-6 space-y-3 text-gray-700">
+                    <li><strong>Step 0:</strong> Map each letter of the alphabet to its corresponding numerical position (i.e., A = 1, B = 2, ..., Z = 26) for mathematical representation.
+                        <div class="text-center my-4">
+                            <img src="img/step0.png" alt="Alphabet Mapping" class="max-w-full h-auto border border-gray-300 rounded-lg shadow-sm mx-auto" onerror="this.onerror=null;this.src='https://upload.wikimedia.org/wikipedia/commons/2/2b/Cryptography_diagram.png'; this.alt='Diagram not found, showing fallback image.';">
+                        </div>
+                    </li>
+                    <li><strong>Step 1:</strong> Select an integer key <span class="font-mono text-purple-700">K</span> ranging from 1 to 25 (corresponding to the 26 letters of the English alphabet). For instance, using a shift of 3, each letter is moved three positions forward — A becomes D, B becomes E, etc.
+                        <div class="text-center my-4">
+                            <img src="img/step01.png" alt="Caesar Cipher Shift" class="max-w-full h-auto border border-gray-300 rounded-lg shadow-sm mx-auto" onerror="this.onerror=null;this.src='https://upload.wikimedia.org/wikipedia/commons/2/2b/Cryptography_diagram.png'; this.alt='Diagram not found, showing fallback image.';">
+                        </div>
+                    </li>
+                    <li class="mt-4">
+                        <strong>Step 2:</strong> Apply the Encryption Formula<br><br>
+                        <code class="block bg-gray-100 p-2 rounded-md font-mono text-blue-600 mb-2"><strong>C = (L + K) mod 26</strong></code>
+                        <p class="font-semibold text-gray-800">Where:</p>
+                        <ul class="list-disc pl-6 text-sm space-y-1">
+                            <li><strong>C</strong> is the encrypted letter (ciphertext),</li>
+                            <li><strong>L</strong> is the position of the original letter in the alphabet (A = 0, B = 1, ..., Z = 25),</li>
+                            <li><strong>K</strong> is the chosen key (shift),</li>
+                            <li><code class="font-mono">mod 26</code> ensures the result wraps around within the alphabet.</li>
+                        </ul>
                         <br>
-                        <div class="font-bold">Result:</div>
-                        <div id="rsa-keygen-result" class="bg-yellow-200 mt-[20px] text-xl text-lg">No Result</div>
+                        <p class="font-semibold text-gray-800">Example: Encrypting “YURIHANAMITCHI” with K = 3</p>
+                        <p class="mb-2">Let's encrypt each letter of the word <strong>“YURIHANAMITCHI”</strong>:</p>
+                        <ul class="list-none p-0 space-y-1">
+                            <li>Y &rarr; 24 &rarr; (24 + 3) % 26 = 1 &rarr; <strong>B</strong></li>
+                            <li>U &rarr; 20 &rarr; (20 + 3) % 26 = 23 &rarr; <strong>X</strong></li>
+                            <li>R &rarr; 17 &rarr; (17 + 3) % 26 = 20 &rarr; <strong>U</strong></li>
+                            <li>I &rarr; 8 &rarr; (8 + 3) % 26 = 11 &rarr; <strong>L</strong></li>
+                            <li>H &rarr; 7 &rarr; (7 + 3) % 26 = 10 &rarr; <strong>K</strong></li>
+                            <li>A &rarr; 0 &rarr; (0 + 3) % 26 = 3 &rarr; <strong>D</strong></li>
+                            <li>N &rarr; 13 &rarr; (13 + 3) % 26 = 16 &rarr; <strong>Q</strong></li>
+                            <li>A &rarr; 0 &rarr; (0 + 3) % 26 = 3 &rarr; <strong>D</strong></li>
+                            <li>M &rarr; 12 &rarr; (12 + 3) % 26 = 15 &rarr; <strong>P</strong></li>
+                            <li>I &rarr; 8 &rarr; (8 + 3) % 26 = 11 &rarr; <strong>L</strong></li>
+                            <li>T &rarr; 19 &rarr; (19 + 3) % 26 = 22 &rarr; <strong>W</strong></li>
+                            <li>C &rarr; 2 &rarr; (2 + 3) % 26 = 5 &rarr; <strong>F</strong></li>
+                            <li>H &rarr; 7 &rarr; (7 + 3) % 26 = 10 &rarr; <strong>K</strong></li>
+                            <li>I &rarr; 8 &rarr; (8 + 3) % 26 = 11 &rarr; <strong>L</strong></li>
+                        </ul>
+                        <code class="block bg-gray-100 p-2 rounded-md font-mono text-green-700 mt-4"><strong>Hence encryption of YURIHANAMITCHI: BXULKDQDPLWFKL</strong></code><br>
+                        <div class="text-center my-4">
+                            <img src="img/STEP2.png" alt="Caesar Cipher Encryption Steps" class="max-w-full h-auto border border-gray-300 rounded-lg shadow-sm mx-auto" onerror="this.onerror=null;this.src='https://upload.wikimedia.org/wikipedia/commons/2/2b/Cryptography_diagram.png'; this.alt='Diagram not found, showing fallback image.';">
+                        </div>
+                    </li>
+                    <li>
+                        <p class="text-green-700 font-bold">✅ Result: “YURIHANAMITCHI” becomes <strong>“BXULKDQDPLWFKL”</strong></p><br>
+                        <strong>Step 3:</strong> Apply the Decryption Formula<br><br>
+                        <code class="block bg-gray-100 p-2 rounded-md font-mono text-blue-600 mb-2"><strong>P = (C - K) mod 26</strong></code><br>
+                        <p class="font-semibold text-gray-800">Where:</p>
+                        <ul class="list-disc pl-6 text-sm space-y-1">
+                            <li><strong>P</strong> is the original letter (plaintext),</li>
+                            <li><strong>C</strong> is the encrypted letter (ciphertext),</li>
+                            <li><strong>K</strong> is the key (shift used during encryption),</li>
+                            <li><code class="font-mono">mod 26</code> ensures the result wraps around the alphabet.</li>
+                        </ul>
+                        <br>
+                        <p class="font-semibold text-gray-800">Decryption Example: “BXULKDQDPLWFKL” with K = 3 becomes “YURIHANAMITCHI”</p><br>
+                        <p class="font-semibold text-gray-800">Limitation:</p>
+                        <p class="leading-relaxed text-gray-700">The Caesar cipher is vulnerable to brute-force attacks because it uses only a single key with 25 possible values (for the 26 English letters). An attacker can try each of the 25 shifts and quickly determine which one yields readable text. Once the key is found, the entire message can be decrypted easily.</p>
+                    </li>
+                </ol>
+
+                <h4 class="text-xl font-bold text-gray-900 border-b border-gray-300 pb-2 mt-6 mb-4">Caesar Cipher Demo</h4>
+                <p class="mt-4 leading-relaxed text-gray-700">
+                    The Caesar Cipher is a classical encryption technique where each letter in the plaintext is shifted a fixed number of positions in the alphabet. While it's historically important and easy to understand, this cipher is extremely vulnerable to attacks. Since there are only 25 possible shifts, a brute-force attacker can easily try every option until the correct message is revealed. Moreover, it does not hide letter frequencies, making it susceptible to frequency analysis. Despite its simplicity and weakness by modern standards, the Caesar Cipher is a great starting point for learning about encryption. The video below demonstrates how this cipher works in a fun and visual way.
+                </p>
+                <!-- YouTube Video Embed -->
+                 <div style="max-width: 800px; margin: auto;">
+                <div class="video-container my-8">
+                    <iframe src="https://www.youtube.com/embed/sMOZf4GN3oc" title="Caesar Cipher Explained - YouTube" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                </div>
+                </div>
+
+                <div class="flex flex-col gap-4 items-center mt-4 p-4 bg-green-50 border border-green-200 rounded-md shadow-sm">
+                    <p class="text-green-700 font-semibold text-center">
+                        ✅ All set! Go ahead and enter your text below to get started with Caesar Cipher encryption or decryption.
+                    </p>
+                    <label for="caesar-input" class="text-lg font-medium text-gray-700">Enter your text (Plain text or Cipher text):</label>
+                    <input type="text" id="caesar-input" class="w-full max-w-md" placeholder="Ex: SURRENDER NOW"/>
+
+                    <div class="flex flex-col sm:flex-row gap-4 mt-2 w-full max-w-md">
+                        <button id="caesar-encrypt-btn" class="bg-blue-500 hover:bg-blue-600 text-white rounded-md p-3 flex-grow">Encrypt</button>
+                        <button id="caesar-decrypt-btn" class="bg-red-500 hover:bg-red-600 text-white rounded-md p-3 flex-grow">Decrypt</button>
                     </div>
-                    <br>
+
+                    <div class="font-bold text-xl mt-6 text-gray-800">Result:</div>
+                    <div id="caesar-result" class="w-full max-w-md">No Result</div>
                 </div>
             </div>
+
+            <div id="tabRSA" class="tab-content hidden">
+                <h2 class="text-2xl font-bold text-gray-900 mb-4">What is RSA Cryptography?</h2>
+                <p class="mb-4 leading-relaxed text-gray-700">RSA (Rivest–Shamir–Adleman) is a public-key cryptosystem and one of the oldest, most reliable methods for securing data transmission. Developed in 1977, it allows data to be encrypted with one key (public) and decrypted with another (private). Its strength relies on the computational difficulty of factoring large prime numbers.</p>
+
+                <h2 class="text-2xl font-bold text-gray-900 mb-4">How Does RSA Verify Identity?</h2>
+                <p class="mb-4 leading-relaxed text-gray-700">Encrypting with the public key and decrypting with the private key is a core feature of RSA, enabling secure communication over untrusted networks. To send sensitive data, the recipient shares their public key with the sender. The sender uses this public key to encrypt the message and transmits it. Only the recipient, who holds the matching private key, can decrypt and read the message. Even if the data is intercepted in transit, it remains unreadable without the private key — ensuring confidentiality and secure delivery.</p>
+
+                <div class="text-center my-8">
+                    <img src="img/RSA-Working-Diagram.jpg" alt="RSA Working Diagram" class="max-w-full h-auto border border-gray-300 rounded-lg shadow-md mx-auto" onerror="this.onerror=null;this.src='https://upload.wikimedia.org/wikipedia/commons/2/2b/Cryptography_diagram.png'; this.alt='Diagram not found, showing fallback image.';">
+                    <p class="italic text-sm text-gray-600 mt-2">Figure: A simple diagram illustrating how the RSA encryption algorithm works</p>
+                </div>
+
+                <h2 class="text-2xl font-bold text-gray-900 mb-4">How is RSA Identity Verification?</h2>
+                <p class="mb-4 leading-relaxed text-gray-700"><strong>RSA Identity Verification:</strong> RSA can also be used to verify identity by encrypting a message with the sender’s private key. The recipient uses the sender’s public key to decrypt it — if successful, it proves the message came from the sender and wasn’t tampered with. This process supports digital signatures. RSA’s strength lies in the difficulty of factoring large numbers made from multiplying two large primes. Modern RSA keys are typically 2048 bits long, offering strong security, while 1024-bit keys are becoming outdated.</p>
+
+                <!-- YouTube Video Embed -->
+                <div style="max-width: 800px; margin: auto;">
+                <div class="video-container my-8">
+                    <iframe src="https://www.youtube.com/embed/Pq8gNbvfaoM" title="RSA Algorithm Explained - YouTube" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                </div>
+                 </div>
+
+                <h2 class="text-2xl font-bold text-gray-900 mb-4">Functionality of an RSA Cryptosystem</h2>
+                <p class="mt-2 mb-4 leading-relaxed text-gray-700">
+                    RSA works using a pair of keys: a <strong>public key</strong> (shared with everyone) and a <strong>private key</strong> (kept secret). These keys are mathematically linked and enable several essential security features:
+                </p>
+                <ul class="list-disc pl-6 mb-4 space-y-2 text-gray-700">
+                    <li><strong>Confidentiality:</strong> Ensures only the intended recipient can read the message. The sender encrypts the data with the recipient’s public key, and only the recipient can decrypt it using their private key.</li>
+                    <li><strong>Authentication:</strong> Proves the identity of the sender. The sender encrypts data (or a digital signature) with their private key, and anyone with the sender’s public key can verify its origin.</li>
+                    <li><strong>Integrity:</strong> Ensures that the message hasn’t been tampered with during transmission. RSA can be used with digital signatures to verify that the message remains unchanged.</li>
+                    <li><strong>Non-repudiation:</strong> Prevents senders from denying that they sent a message. Once a message is signed using a private key, it can be verified by others using the public key.</li>
+                </ul>
+            </div>
+
+            <div id="tabKeygen" class="tab-content hidden">
+                <h3 class="text-2xl font-bold text-gray-900 border-b border-gray-300 pb-2 mb-4">What is RSA Key Generation?</h3>
+                <p class="mb-4 leading-relaxed text-gray-700">In cryptography, key generation is the process of creating one or more keys to be used for encryption and decryption of data. The system generates two mathematically linked keys: a public key, which is shared openly, and a private key, which is kept secret. These keys are based on large prime numbers and mathematical functions, ensuring that data encrypted with one key can only be decrypted with the other.</p>
+
+                <h3 class="text-xl font-bold text-gray-800 border-b border-gray-300 pb-2 mb-4">Key Generation Algorithm</h3>
+                <ol class="list-decimal pl-6 space-y-3 text-gray-700">
+                    <li><strong>Step 1:</strong> Choose two distinct prime numbers <code class="font-mono">p</code> and <code class="font-mono">q</code>.
+                        <br>Example: <code class="font-mono">p = 3</code>, <code class="font-mono">q = 11</code></li>
+
+                    <li><strong>Step 2:</strong> Compute <code class="font-mono">n = p × q</code>, which will be used as the modulus for both keys.
+                        <br>Example: <code class="font-mono">n = 3 × 11 = 33</code></li>
+
+                    <li><strong>Step 3:</strong> Compute Euler’s Totient function:
+                        <br><code class="font-mono">Φ(n) = (p − 1) × (q − 1)</code>
+                        <br>Example: <code class="font-mono">Φ(33) = (3−1)(11−1) = 2 × 10 = 20</code></li>
+
+                    <li><strong>Step 4:</strong> Choose a public exponent <code class="font-mono">e</code> such that:
+                        <ul class="list-disc pl-6 space-y-1 text-sm">
+                            <li><code class="font-mono">1 &lt; e &lt; Φ(n)</code></li>
+                            <li><code class="font-mono">gcd(e, Φ(n)) = 1</code> (i.e., e is co-prime with Φ(n))</li>
+                        </ul>
+                        Example: <code class="font-mono">e = 3</code></li>
+
+                    <li><strong>Step 5:</strong> Calculate the private exponent <code class="font-mono">d</code> such that:
+                        <br><code class="font-mono">(d × e) ≡ 1 mod Φ(n)</code>
+                        <br>This is done using the Extended Euclidean Algorithm.
+                        <br>Example: <code class="font-mono">d = 7</code> since <code class="font-mono">3 × 7 = 21 ≡ 1 mod 20</code></li>
+
+                    <li><strong>Step 6:</strong> Construct the keys:
+                        <ul class="list-disc pl-6 space-y-1 text-sm">
+                            <li>Public Key: <code class="font-mono">(e = 3, n = 33)</code></li>
+                            <li>Private Key: <code class="font-mono">(d = 7, n = 33)</code></li>
+                        </ul>
+                    </li>
+                </ol>
+
+                <h4 class="text-xl font-bold text-gray-900 border-b border-gray-300 pb-2 mt-6 mb-4">RSA Key Generation Summary</h4>
+                <p class="mt-2 mb-4 leading-relaxed text-gray-700">
+                    ✅ In this example:<br>
+                    <strong class="text-blue-700">Public Key:</strong> <code class="font-mono">(3, 33)</code><br>
+                    <strong class="text-red-700">Private Key:</strong> <code class="font-mono">(7, 33)</code><br><br>
+                    The public key is used for encryption, and the private key is used for decryption.
+                </p>
+
+                <h4 class="text-xl font-bold text-gray-900 border-b border-gray-300 pb-2 mt-6 mb-4">RSA Keygen Demo</h4>
+                <p class="mt-2 mb-4 leading-relaxed text-gray-700">
+                    Understanding the key generation steps is crucial to grasping how RSA ensures secure communication. The video below breaks down the key generation process in a visual and intuitive way — making it easier to understand even for beginners. Watch how prime numbers, Euler’s Totient function, and modular inverse all come together to form the core of RSA encryption.
+                </p>
+                <div style="max-width: 800px; margin: auto;">
+                <div class="video-container my-8">
+                    <iframe src="https://www.youtube.com/embed/819cUtO2cwo" title="RSA Algorithm Explained - YouTube" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                </div>
+              </div>
+
+                <div class="flex flex-col gap-4 items-center mt-4 p-4 bg-green-50 border border-green-200 rounded-md shadow-sm">
+                    <p class="text-green-700 font-semibold text-center">
+                        ✅ Ready to test it out? Use the RSA demo below to generate keys and see encryption in action.
+                    </p>
+                    <label for="rsa-keygen-p" class="text-lg font-medium text-gray-700">Enter the first prime number p:</label>
+                    <input type="number" id="rsa-keygen-p" class="w-full max-w-md" placeholder="Ex: 61"/>
+                    <label for="rsa-keygen-q" class="text-lg font-medium text-gray-700">Enter the second prime number q:</label>
+                    <input type="number" id="rsa-keygen-q" class="w-full max-w-md" placeholder="Ex: 53"/>
+                    <button id="rsa-keygen-btn" class="bg-blue-500 hover:bg-blue-600 text-white rounded-md p-3 w-full max-w-xs">Generate Key</button>
+
+                    <div class="font-bold text-xl mt-6 text-gray-800">Result:</div>
+                    <div id="rsa-keygen-result" class="w-full max-w-md">No Result</div>
+                </div>
+            </div>
+
             <div id="tabEncrypt" class="tab-content hidden">
+                <h3 class="text-2xl font-bold text-gray-900 border-b border-gray-300 pb-2 mb-4">What is RSA Encryption?</h3>
+                <p class="mb-4 leading-relaxed text-gray-700">
+                    Once RSA keys are generated, the sender uses the recipient’s public key to encrypt the original message.
+                    This process transforms readable data (plaintext) into an unreadable format called cipher text, which can safely
+                    be transmitted over insecure channels such as the internet.
+                </p>
 
-    <h5 class="font-bold text-lg border-b-[1px]">What is RSA Encryption?</h5>
-    <p>
-        Once RSA keys are generated, the sender uses the recipient’s public key to encrypt the original message.
-        This process transforms readable data (plaintext) into an unreadable format called cipher text, which can safely
-        be transmitted over insecure channels such as the internet.
-    </p>
+                <h3 class="text-xl font-bold text-gray-800 border-b border-gray-300 pb-2 mt-4 mb-4">RSA Encryption Algorithm</h3>
+                <ol class="list-decimal pl-6 space-y-3 text-gray-700">
+                    <li><strong>Step 1:</strong> Convert the message (M) into a number using ASCII or other encoding schemes.</li>
+                    <li><strong>Step 2:</strong> Use the public key <code class="font-mono">(e, n)</code> to encrypt the message using the formula:
+                        <br><code class="block bg-gray-100 p-2 rounded-md font-mono text-blue-600 mt-2">C = M<sup>e</sup> mod n</code></li>
+                </ol>
 
-    <h5 class="font-bold text-lg border-b-[1px] mt-4">RSA Encryption Algorithm</h5>
-    <ol style="margin-left: 20px;">
-        <li><strong>Step 1:</strong> Convert the message (M) into a number using ASCII or other encoding schemes.</li>
-        <li><strong>Step 2:</strong> Use the public key <code>(e, n)</code> to encrypt the message using the formula:
-            <br><code>C = M<sup>e</sup> mod n</code></li>
-    </ol>
+                <h3 class="text-xl font-bold text-gray-800 border-b border-gray-300 pb-2 mt-4 mb-4">RSA Encryption Example</h3>
+                <p class="mt-2 mb-2 leading-relaxed text-gray-700">
+                    <strong class="text-blue-700">Public Key:</strong> <code class="font-mono">e = 3</code>, <code class="font-mono">n = 33</code><br>
+                    <strong class="text-gray-700">Message (M):</strong> <code class="font-mono">4</code>
+                </p>
+                <p class="mt-2 mb-4 leading-relaxed text-gray-700">
+                    Encryption Formula: <br>
+                    <code class="block bg-gray-100 p-2 rounded-md font-mono text-blue-600 mt-2">C = M<sup>e</sup> mod n = 4<sup>3</sup> mod 33 = 64 mod 33 = 31</code>
+                </p>
+                <p class="mt-2 mb-4 text-green-700 font-bold">
+                    ✅ <strong>Encrypted Message (Cipher Text):</strong> <code class="font-mono">C = 31</code>
+                </p>
+                <div class="flex flex-col gap-4 items-center mt-4 p-4 bg-green-50 border border-green-200 rounded-md shadow-sm">
+                    <p class="text-green-700 font-semibold text-center">
+                        This example shows how a simple message is securely encrypted using RSA!
+                    </p>
+                </div>
 
-    <h5 class="font-bold text-lg border-b-[1px] mt-4">RSA Encryption Example</h5>
-    <p class="mt-2">
-        <strong>Public Key:</strong> <code>e = 3</code>, <code>n = 33</code><br>
-        <strong>Message (M):</strong> <code>4</code>
-    </p>
-    <p class="mt-2">
-        Encryption Formula: <br>
-        <code>C = M<sup>e</sup> mod n = 4<sup>3</sup> mod 33 = 64 mod 33 = 31</code>
-    </p>
-    <p class="mt-2">
-        ✅ <strong>Encrypted Message (Cipher Text):</strong> <code>C = 31</code>
-    </p>
-    <div class="flex flex-col gap-[10px] justify-center items-center mt-[20px]">
-        <p class="text-green-600 font-semibold text-md text-center">
-            This example shows how a simple message is securely encrypted using RSA!
-        </p>
-    </div>
+                <h4 class="text-xl font-bold text-gray-900 border-b border-gray-300 pb-2 mt-6 mb-4">RSA Encryption Demo</h4>
+                <p class="mt-2 mb-4 leading-relaxed text-gray-700">
+                    RSA encryption may sound complex at first, but once you understand the core idea — transforming readable messages into secure ciphertext using public keys — it becomes much more approachable.
+                    The video below provides a step-by-step demo of how RSA encryption works in practice. It walks you through encoding a message, applying the encryption formula, and seeing the encrypted result.
+                    If you're a visual learner, this demonstration will help reinforce your understanding of the RSA encryption process.
+                </p>
+             <div style="max-width: 800px; margin: auto;">
+                <div class="video-container my-8">
+                    <iframe src="https://www.youtube.com/embed/M7kEpw1tn50" title="RSA Algorithm Explained - YouTube" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                </div>
+               </div>
 
-    <!-- Move the following block INSIDE tabEncrypt -->
-    <h6 class="font-bold text-lg border-b-[1px]"> RSA Encryption Demo</h6>
-    <p class="mt-2">
-        RSA encryption may sound complex at first, but once you understand the core idea — transforming readable messages into secure ciphertext using public keys — it becomes much more approachable. 
-        The video below provides a step-by-step demo of how RSA encryption works in practice. It walks you through encoding a message, applying the encryption formula, and seeing the encrypted result.
-        If you're a visual learner, this demonstration will help reinforce your understanding of the RSA encryption process.
-    </p>
-    <div class="video-container" style="margin: 20px 0;">
-        <iframe width="560" height="315" src="https://www.youtube.com/embed/M7kEpw1tn50"
-            title="RSA Algorithm Explained - YouTube" frameborder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowfullscreen></iframe>
-    </div>
-    <div class="flex flex-col gap-[10px] justify-center items-center mt-[30px]">
-        <div class="flex flex-col gap-[10px] justify-center items-center">
-            <label for="rsa-encrypt-input" class="text-lg">Enter your text (Plain text or Cipher text):</label>
-            <input type="text" id="rsa-encrypt-input" class="border-1 border-gray-700 rounded-sm p-2 w-full" placeholder="Ex: Enter Plaintext"/>
-            <label for="rsa-encrypt-key-e" class="text-lg">Enter the public key(e):</label>
-            <input type="number" id="rsa-encrypt-key-e" class="border-1 border-gray-700 rounded-sm p-2 w-[200px]" placeholder="NUM"/>
-            <label for="rsa-encrypt-key-n" class="text-lg">Enter the modulus(n):</label>
-            <input type="number" id="rsa-encrypt-key-n" class="border-1 border-gray-700 rounded-sm p-2 w-[200px]" placeholder="NUM"/>
-            <button id="rsa-encrypt-btn" class="bg-blue-500 hover:cursor-pointer hover:bg-yellow-400 text-white rounded-md p-2">Encrypt</button>
+                <hr class="my-8 border-t-2 border-gray-300">
+
+                <h4 class="text-xl font-bold text-gray-900 border-b border-gray-300 pb-2 mb-4"> Encryption </h4>
+
+            <div class="flex flex-col gap-[10px] justify-center items-center mt-[30px]">
+            <div class="flex flex-col gap-4 items-center mt-4 p-4 bg-purple-50 border border-purple-200 rounded-md shadow-sm">
+            <label for="messageInputBookVersion" class="text-lg">Enter your text (Plain text or Cipher text):</label>
+            <input type="text" id="messageInputBookVersion" class="border-1 border-gray-700 rounded-sm p-2 w-full" placeholder="Ex: Enter Plaintext"/>
+            <label for="rsa-encrypt-key-e-book" class="text-lg">Enter the public key(e):</label>
+            <input type="number" id="rsa-encrypt-key-e-book" class="border-1 border-gray-700 rounded-sm p-2 w-[200px]" placeholder="NUM"/>
+            <label for="rsa-encrypt-key-n-book" class="text-lg">Enter the modulus(n):</label>
+            <input type="number" id="rsa-encrypt-key-n-book" class="border-1 border-gray-700 rounded-sm p-2 w-[200px]" placeholder="NUM"/>
+            <button id="rsa-encrypt-btn-book" class="bg-blue-500 hover:cursor-pointer hover:bg-yellow-400 text-white rounded-md p-2">Encrypt</button>
             <br>
             <div class="font-bold">Result:</div>
-            <div id="rsa-encrypt-result" class="bg-yellow-200 mt-[20px] text-xl text-lg">No Result</div>
+            <div id="rsa-encrypt-result-book" class="bg-yellow-200 mt-[20px] text-xl text-lg">No Result</div>
         </div>
         <br>
-    </div>
-
-    <hr class="my-6 border-t-[2px] border-gray-400">
-
-<h5 class="font-bold text-lg border-b-[1px] mt-6">Second method of Encryption </h5>
-
-<div class="flex flex-col gap-[10px] justify-center items-center mt-[20px]">
-    <label for="crypto317-input" class="text-lg">Enter your uppercase text (A–Z only):</label>
-    <input type="text" id="crypto317-input" class="border-1 border-gray-700 rounded-sm p-2 w-full" placeholder="Ex: STOP" />
-
-    <label for="crypto317-key-e" class="text-lg">Enter the public key (e):</label>
-    <input type="number" id="crypto317-key-e" class="border-1 border-gray-700 rounded-sm p-2 w-[200px]" placeholder="Ex: 13" />
-
-    <label for="crypto317-key-n" class="text-lg">Enter the modulus (n):</label>
-    <input type="number" id="crypto317-key-n" class="border-1 border-gray-700 rounded-sm p-2 w-[200px]" placeholder="Ex: 2537" />
-
-    <button id="crypto317-encrypt-btn" class="bg-purple-600 hover:bg-yellow-400 text-white rounded-md p-2">Encrypt 4.6</button>
-
-    <div class="font-bold mt-4">Encrypted Output:</div>
-    <div id="crypto317-result" class="bg-yellow-200 text-xl p-2 w-full text-center">No Result</div>
-</div>
 
 </div>
-            
+</div>
+
+
+
+
             <div id="tabDecrypt" class="tab-content hidden">
-       <h6 class="font-bold text-lg border-b-[1px] mt-6">What is RSA Decryption?</h6>
-<p class="mt-2">
-    RSA Decryption is the process of converting encrypted data (cipher text) back into its original readable form (plain text) using the private key. 
-    Once the recipient receives the cipher text, they apply their private key to decrypt it, ensuring that only the rightful owner—who holds the private key—can access the original message.
-</p>
+                <h3 class="text-2xl font-bold text-gray-900 border-b border-gray-300 pb-2 mb-4">What is RSA Decryption?</h3>
+                <p class="mt-2 mb-4 leading-relaxed text-gray-700">
+                    RSA Decryption is the process of converting encrypted data (cipher text) back into its original readable form (plain text) using the private key.
+                    Once the recipient receives the cipher text, they apply their private key to decrypt it, ensuring that only the rightful owner—who holds the private key—can access the original message.
+                </p>
 
-<p class="text-lg font-bold mt-4">RSA Decryption Algorithm</p>
-<ol style="margin-left: 20px;">
-    <li><strong>Step 1:</strong> Take the cipher text <code>C</code> that needs to be decrypted.</li>
-    <li><strong>Step 2:</strong> Use the private key <code>(d, n)</code>.</li>
-    <li><strong>Step 3:</strong> Apply the formula:
-        <br><code>M = C<sup>d</sup> mod n</code>, 
-        where <code>M</code> is the original message.</li>
-</ol>
+                <h3 class="text-xl font-bold text-gray-800 border-b border-gray-300 pb-2 mt-4 mb-4">RSA Decryption Algorithm</h3>
+                <ol class="list-decimal pl-6 space-y-3 text-gray-700">
+                    <li><strong>Step 1:</strong> Take the cipher text <code class="font-mono">C</code> that needs to be decrypted.</li>
+                    <li><strong>Step 2:</strong> Use the private key <code class="font-mono">(d, n)</code> to decrypt the message using the formula:
+                        <br><code class="block bg-gray-100 p-2 rounded-md font-mono text-blue-600 mt-2">M = C<sup>d</sup> mod n</code></li>
+                </ol>
 
-<p class="mt-4 font-semibold">Example:</p>
-<ul style="margin-left: 20px;">
-    <li><strong>Cipher Text (C):</strong> 31</li>
-    <li><strong>Private Key:</strong> <code>(d = 7, n = 33)</code></li>
-    <li><strong>Decryption Formula:</strong> <code>M = 31<sup>7</sup> mod 33</code></li>
-    <li><strong>Result:</strong> <code>M = 4</code></li>
-</ul>
+                <h3 class="text-xl font-bold text-gray-800 border-b border-gray-300 pb-2 mt-4 mb-4">RSA Decryption Example</h3>
+                <p class="mt-2 mb-2 leading-relaxed text-gray-700">
+                    <strong class="text-red-700">Private Key:</strong> 
+                    <code class="font-mono">d = 7</code>, 
+                    <code class="font-mono">n = 33</code><br>
+                    <strong class="text-gray-700">Ciphertext (C):</strong> 
+                    <code class="font-mono">31</code>
+                </p>
 
-<p class="mt-2">
-    🔓 <strong>Decrypted Message:</strong> <code>M = 4</code>
-</p>
+                <p class="mt-2 mb-4 leading-relaxed text-gray-700">
+                    <strong>Decryption Formula:</strong><br>
+                    <code class="block bg-gray-100 p-2 rounded-md font-mono text-blue-600 mt-2">
+                        M = C<sup>d</sup> mod n = 31<sup>7</sup> mod 33
+                    </code>
+                </p>
 
-<h6 class="font-bold text-lg border-b-[1px] mt-6">RSA Decryption Demo</h6>
-<p class="mt-2">
-    Seeing decryption in action helps connect the dots between theory and practice. The video below walks through an RSA decryption example, clearly showing how a cipher text is transformed back into its original form using the private key. 
-    If you're curious about how math ensures message security, this demo makes it easy to follow.
-</p>
-<div class="video-container" style="margin: 20px 0;">
-    <iframe width="560" height="315" src="https://www.youtube.com/embed/M7kEpw1tn50"
-        title="RSA Algorithm Explained - YouTube" frameborder="0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        allowfullscreen></iframe>
-</div>
+                <p class="mt-2 mb-2 leading-relaxed text-gray-700">
+                    <strong>Step-by-Step Decryption:</strong>
+                    <ul class="list-disc pl-6 space-y-1 mt-2">
+                        <li>We need to compute: <code class="font-mono">31<sup>7</sup> mod 33</code></li>
+                        <li>Use successive squaring (mod 33):</li>
+                        <li>
+                            31 ≡ -2 mod 33, so:<br>
+                            (–2)<sup>7</sup> = –128
+                        </li>
+                        <li>
+                            –128 mod 33 = 4, because:<br>
+                            –128 = (–4 × 33) + 4 ⇒ remainder is 4
+                        </li>
+                    </ul>
+                </p>
 
-        <div class="flex flex-col gap-[10px] justify-center items-center mt-[30px]">
-            <label for="rsa-decrypt-input" class="text-lg">Enter your text (Plain text or Cipher text):</label>
-                <input type="text" id="rsa-decrypt-input" class="border-1 border-gray-700 rounded-sm p-2 w-full" placeholder="Ex: Enter Ciphertext"/>
-                <label for="rsa-decrypt-key-d" class="text-lg">Enter the private key(d):</label>
-                <input type="number" id="rsa-decrypt-key-d" class="border-1 border-gray-700 rounded-sm p-2 w-[200px]" placeholder="NUM"/>
-                <label for="rsa-decrypt-key-n" class="text-lg">Enter the modulus(n):</label>
-                <input type="number" id="rsa-decrypt-key-n" class="border-1 border-gray-700 rounded-sm p-2 w-[200px]" placeholder="NUM"/>
-            <button id="rsa-decrypt-btn" class="bg-blue-500 hover:cursor-pointer hover:bg-yellow-400 text-white rounded-md p-2">Decrypt</button>
+                <p class="mt-4 text-green-700 font-bold">
+                    ✅ <strong>Decrypted Message (Plain Text):</strong> 
+                    <code class="font-mono">M = 4</code>
+                </p>
+
+                <div class="flex flex-col gap-4 items-center mt-4 p-4 bg-green-50 border border-green-200 rounded-md shadow-sm">
+                    <p class="text-green-700 font-semibold text-center">
+                        This example shows how an encrypted message is securely decrypted using RSA!
+                    </p>
+                </div>
+
+                <h4 class="text-xl font-bold text-gray-900 border-b border-gray-300 pb-2 mt-6 mb-4">RSA Decryption Demo</h4>
+                <p class="mt-2 mb-4 leading-relaxed text-gray-700">
+                    The RSA decryption process is the final step in secure communication, transforming the unreadable ciphertext back into its original plaintext form. This demo will guide you through the decryption formula, showing how the private key is used to unlock the message.
+                    It’s a powerful demonstration of how RSA ensures confidentiality, making sure that only the intended recipient can access the sensitive information.
+                </p>
+                <div style="max-width: 800px; margin: auto;">
+                <div class="video-container my-8">
+                    <iframe 
+                    src="https://www.youtube.com/embed/x44ay5HvZKU" 
+                    title="RSA Decryption Explained - YouTube" 
+                    frameborder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                    allowfullscreen>
+                    </iframe>
+                </div>
+                </div>
+                <hr class="my-8 border-t-2 border-gray-300">
+                <h4 class="text-xl font-bold text-gray-900 border-b border-gray-300 pb-2 mb-4"> Decryption </h4>
+
+            <div class="flex flex-col gap-[10px] justify-center items-center mt-[30px]">
+            <div class="flex flex-col gap-4 items-center mt-4 p-4 bg-red-50 border border-purple-200 rounded-md shadow-sm">
+            <label for="rsa-decrypt-input-book" class="text-lg">Enter your text (Plain text or Cipher text):</label>
+                <input type="text" id="rsa-decrypt-input-book" class="border-1 border-gray-700 rounded-sm p-2 w-full" placeholder="Ex: Enter Ciphertext"/>
+                <label for="rsa-decrypt-key-d-book" class="text-lg">Enter the private key(d):</label>
+                <input type="number" id="rsa-decrypt-key-d-book" class="border-1 border-gray-700 rounded-sm p-2 w-[200px]" placeholder="NUM"/>
+                <label for="rsa-decrypt-key-n-book" class="text-lg">Enter the modulus(n):</label>
+                <input type="number" id="rsa-decrypt-key-n-book" class="border-1 border-gray-700 rounded-sm p-2 w-[200px]" placeholder="NUM"/>
+            <button id="rsa-decrypt-btn-book" class="bg-blue-500 hover:cursor-pointer hover:bg-yellow-400 text-white rounded-md p-2">Decrypt</button>
                 <br>
                 <div class="font-bold">Result:</div>
-                <div id="rsa-decrypt-result" class="bg-yellow-200 mt-[20px] text-xl text-lg">No Result</div>
+                <div id="rsa-decrypt-result-book" class="bg-yellow-200 mt-[20px] text-xl text-lg">No Result</div>
         </div>
-</div>
+            </div>
 
+        </div>
+    </div>
+    </div>
 <script src="index.js"></script>
+<script src="rsa-book-medthod.js"></script>
 <script type="module" src="interaction.js"></script>
 <script type="module" src="affine-interaction.js"></script>
 <script type="module" src="transposition-interaction.js"></script>
+<script type="module" src="rsa-cipher.js"></script>
 <script type="module" src="rsa-keygen.js"></script>
 <script type="module" src="rsa-encrypt-decrypt-interaction.js"></script>
 <script>
@@ -469,62 +635,8 @@
     // Add active class to the clicked button
     evt.currentTarget.classList.add("active");
   }
-
-
   //--------------------------------------------------------------
-
-  function letterToNumber(str) {
-    return str.toUpperCase().replace(/[^A-Z]/g, '')
-      .split('')
-      .map(ch => {
-        let num = ch.charCodeAt(0) - 64;
-        return num < 10 ? '0' + num : '' + num;
-      }).join('');
-  }
-
-  function splitIntoBlocks(numStr, blockSize = 4) {
-    const blocks = [];
-    for (let i = 0; i < numStr.length; i += blockSize) {
-      blocks.push(numStr.slice(i, i + blockSize));
-    }
-    return blocks;
-  }
-
-  function modPow(base, exponent, mod) {
-    let result = 1n;
-    base = BigInt(base);
-    exponent = BigInt(exponent);
-    mod = BigInt(mod);
-
-    while (exponent > 0n) {
-      if (exponent % 2n === 1n) {
-        result = (result * base) % mod;
-      }
-      base = (base * base) % mod;
-      exponent = exponent / 2n;
-    }
-    return result;
-  }
-
-  document.getElementById('crypto317-encrypt-btn').addEventListener('click', () => {
-    const input = document.getElementById('crypto317-input').value.trim().toUpperCase();
-    const e = parseInt(document.getElementById('crypto317-key-e').value);
-    const n = parseInt(document.getElementById('crypto317-key-n').value);
-    const outputDiv = document.getElementById('crypto317-result');
-
-    if (!input || isNaN(e) || isNaN(n)) {
-      outputDiv.innerText = 'Please enter valid input and keys.';
-      return;
-    }
-
-    const numericStr = letterToNumber(input);
-    const blocks = splitIntoBlocks(numericStr);
-    const encrypted = blocks.map(b => modPow(b, e, n).toString());
-
-    outputDiv.innerText = encrypted.join(' ');
-  });
 </script>
+    
 </body>
-
 </html>
-
